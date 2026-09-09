@@ -1,6 +1,6 @@
-import { createIcons, ArrowUpRight, ArrowRight, ArrowDown, Menu, X, Pause, Play, Layers2, Building2, MapPin, ContactRound, LayoutDashboard, UsersRound, ChevronsUpDown, CarFront, Handshake, ChartNoAxesCombined, Settings2, ChevronRight, GitBranch, Check, SlidersHorizontal, ScanEye, ShieldCheck, Globe, Info, Plus, Search, Bell } from 'lucide';
+import { createIcons, ArrowUpRight, ArrowDown, Menu, X, Layers2, Building2, MapPin, ContactRound, LayoutDashboard, UsersRound, ChevronsUpDown, CarFront, Handshake, ChartNoAxesCombined, Settings2, ChevronRight, GitBranch, Check, SlidersHorizontal, ScanEye, ShieldCheck, Globe, Info, Plus, Search, Bell } from 'lucide';
 
-const icons = { ArrowUpRight, ArrowRight, ArrowDown, Menu, X, Pause, Play, Layers2, Building2, MapPin, ContactRound, LayoutDashboard, UsersRound, ChevronsUpDown, CarFront, Handshake, ChartNoAxesCombined, Settings2, ChevronRight, GitBranch, Check, SlidersHorizontal, ScanEye, ShieldCheck, Globe, Info, Plus, Search, Bell };
+const icons = { ArrowUpRight, ArrowDown, Menu, X, Layers2, Building2, MapPin, ContactRound, LayoutDashboard, UsersRound, ChevronsUpDown, CarFront, Handshake, ChartNoAxesCombined, Settings2, ChevronRight, GitBranch, Check, SlidersHorizontal, ScanEye, ShieldCheck, Globe, Info, Plus, Search, Bell };
 const renderIcons = () => createIcons({ icons });
 export const integrations = [
   { id: 'diskdrive', name: 'DiskDrive', src: '/integrations/diskdrive.webp', description: 'Vehicle data, right where your dealership needs it.', color: '#e794ca' },
@@ -15,7 +15,7 @@ export const integrations = [
 
 let keyboardController;
 const tabContainer = document.querySelector('.integration-tabs');
-tabContainer.innerHTML = integrations.map((item, i) => `<button class="integration-tab" role="tab" id="integration-tab-${item.id}" data-integration="${item.id}" aria-controls="integration-detail" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}"><img src="${item.src}" width="21" height="21" alt=""/><span>${item.name}</span></button>`).join('');
+tabContainer.innerHTML = integrations.map((item, i) => `<button class="integration-tab" role="tab" id="integration-tab-${item.id}" data-integration="${item.id}" aria-controls="integration-detail" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}" style="--node-color:${item.color}"><img src="${item.src}" width="28" height="28" alt=""/><span>${item.name}</span></button>`).join('');
 
 function selectIntegration(index, pulse = true) {
   const item = integrations[index];
@@ -23,6 +23,7 @@ function selectIntegration(index, pulse = true) {
     tab.setAttribute('aria-selected', String(index === i));
     tab.tabIndex = index === i ? 0 : -1;
   });
+  document.querySelectorAll('.integration-lines line').forEach((line, i) => line.classList.toggle('active', index === i));
   document.querySelector('#integration-detail').setAttribute('aria-labelledby', `integration-tab-${item.id}`);
   document.querySelector('.integration-name').textContent = item.name;
   document.querySelector('.integration-description').textContent = item.description;
@@ -45,6 +46,7 @@ function setupTabKeys(container, callback) {
   });
 }
 setupTabKeys(tabContainer, selectIntegration);
+selectIntegration(0, false);
 
 const productData = {
   leads: {
@@ -110,16 +112,10 @@ if ('IntersectionObserver' in window && !reducedMotion.matches) {
 }
 
 let paused = reducedMotion.matches;
-const motionButton = document.querySelector('.motion-toggle');
-function setMotionState(value) {
-  paused = value; keyboardController?.setPaused(paused);
-  motionButton.setAttribute('aria-pressed', String(paused));
-  motionButton.setAttribute('aria-label', paused ? 'Resume keyboard animation' : 'Pause keyboard animation');
-  motionButton.innerHTML = `<i data-lucide="${paused ? 'play' : 'pause'}"></i><span>${paused ? 'Resume motion' : 'Pause motion'}</span>`; renderIcons();
-}
-motionButton.addEventListener('click', () => setMotionState(!paused));
-reducedMotion.addEventListener('change', event => setMotionState(event.matches));
-setMotionState(paused);
+reducedMotion.addEventListener('change', event => {
+  paused = event.matches;
+  keyboardController?.setPaused(paused);
+});
 
 function showKeyboardFallback(error) {
   console.warn('3D keyboard unavailable; integration buttons remain accessible.', error?.message || 'WebGL context lost');
@@ -128,7 +124,6 @@ function showKeyboardFallback(error) {
   fallback.classList.remove('loaded');
   fallback.classList.add('error');
   fallback.querySelector('span').textContent = 'One desk. Every connection. Explore the integrations below.';
-  motionButton.hidden = true;
 }
 document.querySelector('#keyboard').addEventListener('keyboard-unavailable', () => showKeyboardFallback());
 import('./keyboard.js').then(async ({ createKeyboard }) => {
